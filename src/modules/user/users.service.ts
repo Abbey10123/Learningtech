@@ -1,6 +1,6 @@
 import { Injectable, Inject, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { BadRequestException } from '@nestjs/common/exceptions';
@@ -10,6 +10,7 @@ import { generateOtp } from 'src/core/helper/otp.helper';
 import { UserDto } from './Dtos/user.dto';
 import { OtpReason } from './Interface/otp.interface';
 import { OTP_REPOSITORY, USER_REPOSITORY } from 'src/core/constant/constants';
+import { newPasswordDto } from './Dtos/forget.dto';
 
 
 
@@ -60,4 +61,62 @@ export class UsersService {
             throw new BadRequestException(error);
 
     }}
+
+    async forgotPassword(email){
+        try{
+            const myEmail = await this.userRepo.findOne({where:{email: email}});
+            if (!myEmail) {
+                throw `This user does not exist`   
+            };
+            const otpGen = generateOtp();
+            const expiry = new Date();
+            expiry.setMinutes(expiry.getMinutes()+10);
+            const updateOtp = this.otpRepo.create({
+                code: otpGen.toString(),
+                userId: myEmail.id,
+                otpReason: OtpReason.resetPassword,
+                expiryDate: expiry})
+            const savedNewOtp = this.otpRepo.save(updateOtp);
+            const message = `Please input this verification code ${(await savedNewOtp).code} to reset your password`;
+            const subject = `Password Reset`;
+            welcome(myEmail, message, subject);
+            return {
+                token: this.jwtService.sign({...myEmail}),
+                savedUser: myEmail.email,
+                message: `Reset email sent successfully`};}
+     catch (error) {throw new BadRequestException (error);}
+    } 
+
+    async enterOtp(otp, user: User){ 
+        try{
+        const realUser = await this.userRepo.findOne({where: {id: user.id}})
+        if (!realUser){ 
+            throw new BadRequestException ({message: 'user not found'})
+        }
+        const checkOtp = await this.otpRepo.findOne({where:{ userId: user.id, code:otp, otpReason: OtpReason.resetPassword, expiryDate: MoreThanOrEqual( new Date())}})
+        if (!checkOtp) {
+            throw new BadRequestException({message: "Invalid Otp"})
+        }
+        return {message: "please enter a new password"}}
+        catch (error){
+            throw new BadRequestException (error)
+        }
+    }  
+
+
+    async newPass (user: User, details: newPasswordDto ){
+        try{
+        const foundUser = await this.userRepo.findOne({where:{id: user.id}});
+        if (!foundUser){
+            return{message: "User not found"};
+        }
+       if (details.newPassword !== details.confirmNewPassword){
+            throw new BadRequestException ({message: 'new password does not match'});};
+    foundUser.password = await bcrypt.hash(details.newPassword, 10) ;
+    await this.userRepo.save(foundUser) ;
+            return {message: "New password updated"} }
+        catch (error){
+            throw new BadRequestException (error)
+        }    
+    }
 }    

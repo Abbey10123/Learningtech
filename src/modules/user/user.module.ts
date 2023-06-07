@@ -5,6 +5,7 @@ import { otpsProvider, usersProvider } from './user.provider';
 import { UsersService } from './users.service';
 import { JwtModule } from '@nestjs/jwt';
 import { DatabaseModule } from 'src/core/database/database.module'; 
+import { ForgotPassGuardStrategy } from 'src/core/strategies/forgot-pass-guard.strategy';
 dotenv.config();
 
 @Module({
@@ -12,6 +13,6 @@ dotenv.config();
     secret: process.env.JWT_SECRET,
   })],
   controllers: [UsersController],
-  providers: [{provide: UsersService, useClass: UsersService}, ...usersProvider, ...otpsProvider]
+  providers: [{provide: UsersService, useClass: UsersService}, ForgotPassGuardStrategy, ...usersProvider, ...otpsProvider]
 })
 export class UsersModule {}
