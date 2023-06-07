@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-import { UserType, UserInterface } from '../Interface/user.interface';
+import { UserType, UserInterface, Gender } from '../Interface/user.interface';
 
 @Entity({name: 'users'})
 export class User implements UserInterface {
@@ -14,6 +14,9 @@ export class User implements UserInterface {
   
     @Column()
     email: string;
+
+    @Column({type: 'enum', enum: Gender, nullable :false})
+    gender:Gender;
   
     @Column({type: 'enum', enum: UserType, default: UserType.Student, nullable: false})
     userType: UserType;

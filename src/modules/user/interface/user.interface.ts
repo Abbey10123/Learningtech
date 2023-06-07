@@ -3,6 +3,7 @@ export interface UserInterface {
     firstName: string;
     lastName: string;
     phoneNumber: string;
+    gender: Gender;
     email: string;
     password: string;
     userType: UserType;
@@ -16,7 +17,7 @@ export interface UserInterface {
     Tutor = 'tutor',
   }
   
-//   export enum Gender {
-//     Male = 'male',
-//     Female = 'female'
-//   }
+  export enum Gender {
+    Male = 'male',
+    Female = 'female'
+  }
