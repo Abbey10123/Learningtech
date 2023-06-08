@@ -43,7 +43,7 @@ export class UsersService {
 
         delete foundUser.password;
         return {
-            accessToken: this.jwtService.sign({...foundUser}),
+            accessToken: this.jwtService.sign({...foundUser}, { expiresIn: '24h'}),
             foundUser
         };
     }
