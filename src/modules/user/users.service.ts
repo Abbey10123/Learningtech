@@ -7,7 +7,7 @@ import { BadRequestException } from '@nestjs/common/exceptions';
 import { welcome } from 'src/core/helper/email.helper';
 import { Otp } from './entities/otp.entity';
 import { generateOtp } from 'src/core/helper/otp.helper';
-import { AdminDto, UserDto } from './Dtos/user.dto';
+import { AdminDto, TutorDto, UserDto } from './Dtos/user.dto';
 import { OtpReason } from './Interface/otp.interface';
 import { OTP_REPOSITORY, USER_REPOSITORY } from 'src/core/constant/constants';
 import { newPasswordDto } from './Dtos/forget.dto';
@@ -124,7 +124,7 @@ export class UsersService {
 
     async createAdmin(user: AdminDto){
         try{
-         if (user.Usertype == UserType.Admin){
+         if (user.usertype == UserType.Admin){
         const existingAdmin = await this.checkUser(user.email);
         if(existingAdmin) {
             throw 'Please login'}
@@ -134,12 +134,12 @@ export class UsersService {
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
-            userType: user.Usertype,
+            userType: user.usertype,
             password: encryptPass
         });
         const savedAdmin = await this.userRepo.save(newAdmin);
         const adminSubj = 'Welcome Administrator';
-        const adminMssg = `You are welcome to TalentDev ${savedAdmin.firstName}, Kindly use these informations to login to your account;"email: ${savedAdmin.email},password: ${adminPass}"`;
+        const adminMssg = `You are welcome to TalentDev ${savedAdmin.firstName}, Kindly use these informations to login to your account;"Email: ${savedAdmin.email}, Password: ${adminPass}"`;
         welcome(savedAdmin, adminMssg, adminSubj);
         return "Admin successful created"
         }
@@ -150,13 +150,37 @@ export class UsersService {
         }
     }
 
+    async createTutor(user: TutorDto){
+        try {
+            if (user.usertype == UserType.Tutor){
+            const existingTutor = await this.checkUser(user.email);
+            if(existingTutor){
+              throw "Inform Tutor to login"
+            };
+            
+            const tutorPass = generatePassword(8);
+            const hiddenPass = await bcrypt.hash(tutorPass, 10);
+            const newTutor = this.userRepo.create({
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              gender: user.gender,
+              image_url: user.image_url,
+              userType: user.usertype,
+              phoneNumber: user.phoneNumber,
+              password: hiddenPass,
+              course: user.course
+            });
+            const savedTutor = await this.userRepo.save(newTutor);
+            const subJ = "Welcome Facilitator";
+            const msg = `Hello ${savedTutor.firstName},you have been registered as a facilitator for ${savedTutor.course} on Talent Dev.Kindly use the following details to login to your dashboard."Email: ${savedTutor.email}, Password: ${tutorPass}"`;
+            welcome( savedTutor, subJ, msg);
+            return "Tutor registered"}
+            throw "Not allowed"
+        }
+       
+        catch (error){
+        throw new BadRequestException(error)};
+    }
 
-
-
-
-
-
-
-
-
-}    
+}

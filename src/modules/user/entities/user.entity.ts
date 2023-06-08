@@ -32,4 +32,7 @@ export class User implements UserInterface {
 
     @Column({nullable: true})
     isVerified: boolean;
+
+    @Column({nullable: true})
+    course: string
 }
