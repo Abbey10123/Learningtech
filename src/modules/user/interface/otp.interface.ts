@@ -1,4 +1,4 @@
-export interface Otp{
+export interface OtpInterface {
     id: number,
     userId: number,
     code: string,
