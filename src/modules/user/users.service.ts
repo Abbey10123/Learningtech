@@ -13,6 +13,7 @@ import { OTP_REPOSITORY, USER_REPOSITORY } from 'src/core/constant/constants';
 import { newPasswordDto } from './Dtos/forget.dto';
 import { UserType } from './Interface/user.interface';
 import { generatePassword } from 'src/core/helper/password-generator.helper';
+import { changePasswordDto } from './Dtos/change-pass.dto';
 
 
 
@@ -182,5 +183,22 @@ export class UsersService {
         catch (error){
         throw new BadRequestException(error)};
     }
+    async changePass (user: User, details: changePasswordDto){
+        try{
+        const identify = await this.userRepo.findOne({where: {id:user.id}});
+        if (!identify){
+        throw new BadRequestException ({message: 'User not found'})};
+        if (!(await bcrypt.compare(details.oldPassword, identify.password))){
+        throw new BadRequestException ({message:'Old password is incorrect'});}
+        if (details.newPassword !== details.confirmNewPassword){
+        throw new BadRequestException ({message: 'new password does not match'});}
+        identify.password = await bcrypt.hash(details.newPassword, 5);
+    await this.userRepo.save(identify);
+    return {message:'Your password has been updated'}}
+    catch (error){
+        throw new BadRequestException (error)
+    }}
+    
+
 
 }

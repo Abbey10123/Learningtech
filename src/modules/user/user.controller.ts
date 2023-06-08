@@ -1,8 +1,9 @@
-import { Controller, Post, Body, Get, Req, UseGuards } from "@nestjs/common";
+import { Controller, Post, Body, Get, Req, UseGuards, Patch } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { AdminDto, TutorDto, UserDto } from "./Dtos/user.dto";
 import { ForgotPasswordDto, newPasswordDto } from "./Dtos/forget.dto";
 import { ForgotPassGuard } from "src/core/guards/forgot-pass-guard";
+import { changePasswordDto } from "./Dtos/change-pass.dto";
 
 @Controller('user')
 export class UsersController{
@@ -40,4 +41,8 @@ export class UsersController{
     createTutor(@Body() user: TutorDto){
         return this.usersService.createTutor(user)
     }
+    @Patch('change-password')
+    changePass(@Body() details: changePasswordDto , @Req()request:any){
+        return this.usersService.changePass(request.user, details)
+     }
 }
