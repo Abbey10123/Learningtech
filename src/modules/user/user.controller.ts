@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Get, Req, UseGuards } from "@nestjs/common";
 import { UsersService } from "./users.service";
-import { UserDto } from "./Dtos/user.dto";
+import { AdminDto, UserDto } from "./Dtos/user.dto";
 import { ForgotPasswordDto, newPasswordDto } from "./Dtos/forget.dto";
 import { ForgotPassGuard } from "src/core/guards/forgot-pass-guard";
 
@@ -31,5 +31,9 @@ export class UsersController{
     @Post('update-password')
     newPass(@Body() details: newPasswordDto, @Req() req){
         return this.usersService.newPass(req.user, details)
+    }
+    @Post('admin')
+    createAdmin(@Body() user:AdminDto){
+        return this.usersService.createAdmin(user)
     }
 }

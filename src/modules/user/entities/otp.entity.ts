@@ -2,7 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { OtpReason } from "../Interface/otp.interface";
 
 @Entity({name: 'otps'})
-export class Otp implements Otp{
+export class Otp implements Otp {
     @PrimaryGeneratedColumn()
     id: number;
     @Column({name: 'user_id'})

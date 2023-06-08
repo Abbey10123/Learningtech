@@ -7,10 +7,12 @@ import { BadRequestException } from '@nestjs/common/exceptions';
 import { welcome } from 'src/core/helper/email.helper';
 import { Otp } from './entities/otp.entity';
 import { generateOtp } from 'src/core/helper/otp.helper';
-import { UserDto } from './Dtos/user.dto';
+import { AdminDto, UserDto } from './Dtos/user.dto';
 import { OtpReason } from './Interface/otp.interface';
 import { OTP_REPOSITORY, USER_REPOSITORY } from 'src/core/constant/constants';
 import { newPasswordDto } from './Dtos/forget.dto';
+import { UserType } from './Interface/user.interface';
+import { generatePassword } from 'src/core/helper/password-generator.helper';
 
 
 
@@ -24,7 +26,7 @@ export class UsersService {
         private jwtService: JwtService
     ){}
 
-    private checkUser(email)
+    async checkUser(email)
     {
         return this.userRepo.findOneBy({email: email});
     }
@@ -119,4 +121,42 @@ export class UsersService {
             throw new BadRequestException (error)
         }    
     }
+
+    async createAdmin(user: AdminDto){
+        try{
+         if (user.Usertype == UserType.Admin){
+        const existingAdmin = await this.checkUser(user.email);
+        if(existingAdmin) {
+            throw 'Please login'}
+        const adminPass = generatePassword(8);
+        const encryptPass = await bcrypt.hash (adminPass, 10)
+        const newAdmin = this.userRepo.create({
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            userType: user.Usertype,
+            password: encryptPass
+        });
+        const savedAdmin = await this.userRepo.save(newAdmin);
+        const adminSubj = 'Welcome Administrator';
+        const adminMssg = `You are welcome to TalentDev ${savedAdmin.firstName}, Kindly use these informations to login to your account;"email: ${savedAdmin.email},password: ${adminPass}"`;
+        welcome(savedAdmin, adminMssg, adminSubj);
+        return "Admin successful created"
+        }
+        throw "Not allowed";
+        }
+        catch (error){
+            throw new BadRequestException (error);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
 }    
