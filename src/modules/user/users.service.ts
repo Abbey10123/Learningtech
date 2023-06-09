@@ -9,7 +9,7 @@ import { Otp } from './entities/otp.entity';
 import { generateOtp } from 'src/core/helper/otp.helper';
 import { UserDto, UserAuthDto, UserLoginDto, AdminDto, TutorDto, } from './Dtos/user.dto';
 import { OtpReason } from './Interface/otp.interface';
-import { OTP_REPOSITORY, USER_REPOSITORY } from 'src/core/constant/constants';
+import { message, OTP_REPOSITORY, subject, USER_REPOSITORY } from 'src/core/constant/constants';
 import { newPasswordDto } from './Dtos/forget.dto';
 import { UserType } from './Interface/user.interface';
 import { generatePassword } from 'src/core/helper/password-generator.helper';
@@ -37,8 +37,8 @@ export class UsersService {
 
         if(!foundUser){
            foundUser = await this.userRepo.save({
-                "first_name": user.firstName,
-                "last_name": user.lastName,
+                "firstName": user.firstName,
+                "lastName": user.lastName,
                 "email": user.email,
                 "image_Url": user.picture
             });  
@@ -84,6 +84,32 @@ export class UsersService {
             throw new BadRequestException(error);
 
     }}
+    
+    async verifyEmail(user: User, otp: string){
+        try{
+        // const verif = await this.userRepo.findOne({where:{id: user.id}});
+        // if (verif.isVerified == true){
+        //    throw new BadRequestException ({message: "email already verified"})}
+        
+        const recordOtp = await this.otpRepo.findOne({where:{
+                userId: user.id,
+                otpReason: OtpReason.verifyEmail,
+                code: otp,
+                expiryDate: MoreThanOrEqual( new Date()),
+            }})
+            
+            if (!recordOtp){
+               throw `Invalid Otp`;
+            }
+        await this.userRepo.update(user.id, {isVerified: true});
+            delete user.password;
+            welcome(user, message, subject);
+            return{message: "Verification successful"}}
+        catch(error){
+            throw new BadRequestException (error)
+        }  
+    }  
+
 
     async loginUser(userDetails: UserLoginDto)
     {
@@ -216,10 +242,7 @@ export class UsersService {
             }
             foundUser.password = await bcrypt.hash(details.newPassword, 10);
             await this.userRepo.save(foundUser);
-            return
-            {
-                message: "New password updated";
-            } 
+            return "New password updated";
         }
         catch (error)
         {

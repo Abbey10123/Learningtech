@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
+import { User } from "src/modules/user/entities/user.entity";
 import { UserInterface } from "src/modules/user/Interface/user.interface";
 
 @Injectable()
@@ -14,8 +15,9 @@ import { UserInterface } from "src/modules/user/Interface/user.interface";
           });
         }
         
-        async validate (user: UserInterface){
-          if (user.isVerified){
+        async validate (user: User){
+          console.log(user)
+          if (user.isVerified == true){
             throw new BadRequestException('This user is already verified.');
           }
         return {

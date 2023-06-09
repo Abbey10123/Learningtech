@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Req, UseGuards, Patch } from "@nestjs/common";
+import { Controller, Post, Body, Get, Req, UseGuards, Patch, Param } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { UserDto, UserLoginDto, AdminDto, TutorDto } from "./Dtos/user.dto";
 import { GoogleOauthGuard } from "../auth/guards/google-oauth20.guard";
@@ -6,6 +6,8 @@ import { FacebookGuard } from "../auth/guards/facebook.guard";
 import { ForgotPasswordDto, newPasswordDto } from "./Dtos/forget.dto";
 import { changePasswordDto } from "./Dtos/change-pass.dto";
 import { VerifiedEmailGuard } from "../auth/guards/verified-email.guard";
+import { AdminAccess } from "../auth/guards/admin-access.guard";
+import { NotVerifiedEmailGuard } from "../auth/guards/not-verified-email.guard";
 
 @Controller('user')
 export class UsersController{
@@ -33,6 +35,12 @@ export class UsersController{
     createUser(@Body() user:UserDto){
         return this.usersService.createUser(user)
     }
+   
+    @Patch("verify-email/:otp")
+    @UseGuards(NotVerifiedEmailGuard)
+    verifyEmail(@Param ('otp') otp:string, @Req() req){
+       return this.usersService.verifyEmail(req.user, otp)
+    }
 
     @Post('login')
     async login(@Body() loginDetails: UserLoginDto){
@@ -58,10 +66,12 @@ export class UsersController{
     createAdmin(@Body() user:AdminDto){
         return this.usersService.createAdmin(user)
     }
+    @UseGuards(AdminAccess)
     @Post('facilitator')
     createTutor(@Body() user: TutorDto){
         return this.usersService.createTutor(user)
     }
+    @UseGuards(VerifiedEmailGuard)
     @Patch('change-password')
     changePass(@Body() details: changePasswordDto , @Req()request:any){
         return this.usersService.changePass(request.user, details)
