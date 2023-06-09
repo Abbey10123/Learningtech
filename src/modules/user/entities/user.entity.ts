@@ -30,7 +30,7 @@ export class User implements UserInterface {
     @Column({name: 'phone_number', nullable: true})
     phoneNumber: string;
 
-    @Column({nullable: true})
+    @Column({default: false})
     isVerified: boolean;
 
     @Column({nullable: true})

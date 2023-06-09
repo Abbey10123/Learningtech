@@ -37,13 +37,15 @@ export class UsersService {
 
         if(!foundUser){
            foundUser = await this.userRepo.save({
-                "first_name": user.firstName,
-                "last_name": user.lastName,
+                "firstName": user.firstName,
+                "lastName": user.lastName,
                 "email": user.email,
-                "image_Url": user.picture
+                "image_url": user.picture
             });  
         }
-        await this.userRepo.update(foundUser.id, {isVerified:  true});
+        if(!foundUser.isVerified){
+            await this.userRepo.update(foundUser.id, {isVerified:  true});
+        }
 
         delete foundUser.password;
         return {
@@ -68,7 +70,8 @@ export class UsersService {
              code: getOtp.toString(),
              userId: user.id,
              otpReason: OtpReason.verifyEmail,
-             expiryDate: expiry});
+             expiryDate: expiry
+            });
             const savedOtp = await this.otpRepo.save(newOtp)
             const verifyMessage = `Please input this verification code ${savedOtp.code}`;
             const subjectMessage = `Please Verify`;
