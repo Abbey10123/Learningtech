@@ -15,21 +15,24 @@ export class User implements UserInterface {
     @Column()
     email: string;
 
-    @Column({type: 'enum', enum: Gender, nullable :false})
-    gender:Gender;
+    @Column({type: 'enum', enum: Gender, nullable :true})
+    gender: Gender;
   
     @Column({type: 'enum', enum: UserType, default: UserType.Student, nullable: false})
     userType: UserType;
   
-    @Column()
+    @Column({nullable: true})
     password: string;
   
-    @Column()
+    @Column({nullable: true})
     image_url: string;
   
-    @Column({name: 'phone_number'})
+    @Column({name: 'phone_number', nullable: true})
     phoneNumber: string;
 
-    @Column()
+    @Column({nullable: true})
     isVerified: boolean;
+
+    @Column({nullable: true})
+    course: string
 }

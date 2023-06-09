@@ -11,6 +11,6 @@ import { AuthModule } from '../auth/auth.module';
     secret: process.env.JWT_SECRET,
   })],
   controllers: [UsersController],
-  providers: [{provide: UsersService, useClass: UsersService}, ...usersProvider, ...otpsProvider]
+  providers: [UsersService, ...usersProvider, ...otpsProvider]
 })
 export class UsersModule {}
