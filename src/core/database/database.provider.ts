@@ -11,13 +11,13 @@ export const databaseProvider = [
       useFactory: async () => {
           const dataSource = new DataSource({
             type: 'mysql',
-            host: process.env.DB_Host,
+            host: 'db4free.net',
             port: 3306,
-            username: process.env.DB_USER,
-            password: process.env.DB_PASS,
-            database: process.env.DB_NAME,
+            username: 'quanta',
+            password: 'talentdev2023' ,
+            database: 'quantatalentdev',
             entities:[User,Otp],
-            synchronize: false, 
+            synchronize: true, 
           });
           return dataSource.initialize();
       },
