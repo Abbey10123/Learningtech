@@ -1,4 +1,4 @@
-import { isNumber, Length } from "class-validator";
+import { Length } from "class-validator";
 
 export class changePasswordDto{
     @Length(8,15)

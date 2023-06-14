@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { OtpReason, OtpInterface } from "../Interface/otp.interface";
+import { OtpReason, OtpInterface } from "../interface/otp.interface";
 
 @Entity({name: 'otps'})
 export class Otp implements OtpInterface {

@@ -7,10 +7,10 @@ import { welcome } from 'src/core/helper/email.helper';
 import { Otp } from './entities/otp.entity';
 import { generateOtp } from 'src/core/helper/otp.helper';
 import { UserDto, UserAuthDto, UserLoginDto, AdminDto, TutorDto, } from './Dtos/user.dto';
-import { OtpReason } from './Interface/otp.interface';
+import { OtpReason } from './interface/otp.interface';
 import { message, OTP_REPOSITORY, subject, USER_REPOSITORY } from 'src/core/constant/constants';
 import { newPasswordDto } from './Dtos/forget.dto';
-import { UserType } from './Interface/user.interface';
+import { UserType } from './interface/user.interface';
 import { generatePassword } from 'src/core/helper/password-generator.helper';
 import { changePasswordDto } from './Dtos/change-pass.dto';
 

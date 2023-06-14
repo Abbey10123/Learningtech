@@ -1,8 +1,7 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { User } from "src/modules/user/entities/user.entity";
-import { UserInterface } from "src/modules/user/Interface/user.interface";
 
 @Injectable()
 

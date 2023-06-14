@@ -1,5 +1,5 @@
 import { IsEmail, IsEnum, IsNotEmpty,Length,MinLength } from "class-validator";
-import { Gender, UserType } from "../Interface/user.interface";
+import { Gender, UserType } from "../interface/user.interface";
 
 
 export class UserDto{
