@@ -16,10 +16,7 @@ import { UserInterface } from "src/modules/user/Interface/user.interface";
         }
         
         async validate (user: User){
-          console.log(user)
-          if (user.isVerified == true){
-            throw new BadRequestException('This user is already verified.');
-          }
+          
         return {
         id: user.id, 
         firstName: user.firstName, 

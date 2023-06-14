@@ -3,7 +3,6 @@ import * as bcrypt from 'bcrypt';
 import { MoreThanOrEqual, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
-import { BadRequestException } from '@nestjs/common/exceptions';
 import { welcome } from 'src/core/helper/email.helper';
 import { Otp } from './entities/otp.entity';
 import { generateOtp } from 'src/core/helper/otp.helper';
@@ -14,7 +13,6 @@ import { newPasswordDto } from './Dtos/forget.dto';
 import { UserType } from './Interface/user.interface';
 import { generatePassword } from 'src/core/helper/password-generator.helper';
 import { changePasswordDto } from './Dtos/change-pass.dto';
-
 
 
 @Injectable()
@@ -56,7 +54,7 @@ export class UsersService {
         try {
             const userExists = await this.checkUser(user.email);
             if(userExists){
-                throw 'This User already exists, please proceed to sign-in'
+                throw 'User exists'
             }
             const encrypt = await bcrypt.hash (user.password, 10);
             user.password = encrypt;
@@ -75,21 +73,21 @@ export class UsersService {
             welcome(savedUser, verifyMessage, subjectMessage)
             delete savedUser.password;
             return {
-                token:this.jwtService.sign({...savedUser}),
-                userDetails: savedUser,
+                token:this.jwtService.sign({...savedUser}, { expiresIn: '1h'}),
+                userDetails: savedUser.id,
                 message: "Registration succesful, please check your email for verification!"
             }
         }
         catch (error) {
-            throw new BadRequestException(error);
+            throw new UnauthorizedException(error);
 
     }}
     
     async verifyEmail(user: User, otp: string){
         try{
-        // const verif = await this.userRepo.findOne({where:{id: user.id}});
-        // if (verif.isVerified == true){
-        //    throw new BadRequestException ({message: "email already verified"})}
+        const verif = await this.userRepo.findOne({where:{id: user.id}});
+        if (verif.isVerified == true){
+           throw new UnauthorizedException ({message: "email verified"})}
         
         const recordOtp = await this.otpRepo.findOne({where:{
                 userId: user.id,
@@ -106,7 +104,7 @@ export class UsersService {
             welcome(user, message, subject);
             return{message: "Verification successful"}}
         catch(error){
-            throw new BadRequestException (error)
+            throw new UnauthorizedException (error)
         }  
     }  
 
@@ -119,17 +117,18 @@ export class UsersService {
             {   
                 throw 'Invalid credentials';
             }
-
-            if (!found_user.isVerified)
-            {
-                throw 'This email is not verified, please verify your Email.'
-            }
-
             const isMatch = await bcrypt.compare(userDetails.password, found_user.password);
             if (!isMatch)
             {
                 throw 'Invalid credentials';
             }
+
+            if (!found_user.isVerified)
+            {
+                throw 'Email not verified'
+            }
+
+           
             const { password, ...userWithoutpassword} = found_user;
             return{
                 access_token: this.jwtService.sign({...userWithoutpassword}, { expiresIn: '24h'}),
@@ -146,25 +145,17 @@ export class UsersService {
         try
         {
         const identify = await this.userRepo.findOne({where: {id:user.id}});
-        if (!identify)
-        {
-        throw 'User not found';
-        };
         if (!(await bcrypt.compare(details.oldPassword, identify.password)))
         {
-        throw 'Old password is incorrect';
+        throw 'Incorrect password';
         }
-        if (details.newPassword !== details.confirmNewPassword)
-        {
-        throw 'new password does not match';
-        }
-        identify.password = await bcrypt.hash(details.newPassword, 5);
+        identify.password = await bcrypt.hash(details.newPassword, 10);
         await this.userRepo.save(identify);
         return {message:'Your password has been updated'}
         }
         catch (error)
         {
-        throw new BadRequestException (error)
+        throw new UnauthorizedException (error)
         }
     }
 
@@ -189,14 +180,14 @@ export class UsersService {
             const subject = `Password Reset`;
             welcome(myEmail, message, subject);
             return {
-                token: this.jwtService.sign({...myEmail}),
+                token: this.jwtService.sign({...myEmail}, { expiresIn: '15m'}),
                 savedUser: myEmail.email,
                 message: `Reset email sent successfully`
             };
         }
          catch (error) 
          {
-            throw new BadRequestException (error);
+            throw new UnauthorizedException (error);
          }
     } 
 
@@ -204,7 +195,7 @@ export class UsersService {
         try{
         const realUser = await this.userRepo.findOne({where: {id: user.id}})
         if (!realUser){ 
-            throw new BadRequestException ({message: 'user not found'})
+            throw new UnauthorizedException ({message: 'user not found'})
         }
         const checkOtp = await this.otpRepo.findOne(
             {
@@ -218,11 +209,11 @@ export class UsersService {
             }
             )
         if (!checkOtp) {
-            throw new BadRequestException({message: "Invalid Otp"})
+            throw new UnauthorizedException({message: "Invalid Otp"})
         }
         return {message: "please enter a new password"}}
         catch (error){
-            throw new BadRequestException (error)
+            throw new UnauthorizedException (error)
         }
     }  
 
@@ -246,14 +237,14 @@ export class UsersService {
         }
         catch (error)
         {
-            throw new BadRequestException (error);
+            throw new UnauthorizedException (error);
         }
     }   
 
     public async createAdmin(user: AdminDto)
     {
         try{
-         if (user.usertype == UserType.Admin){
+        if (user.usertype == UserType.Admin){
         const existingAdmin = await this.checkUser(user.email);
         if(existingAdmin) {
             throw 'Please login'}
@@ -275,7 +266,7 @@ export class UsersService {
         throw "Not allowed";
         }
         catch (error){
-            throw new BadRequestException (error);
+            throw new UnauthorizedException (error);
         }
     }
 
@@ -312,7 +303,7 @@ export class UsersService {
        
         catch (error)
         {
-        throw new BadRequestException(error)
+        throw new UnauthorizedException(error)
         };
     }
 

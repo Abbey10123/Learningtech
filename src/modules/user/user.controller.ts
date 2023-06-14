@@ -27,8 +27,7 @@ export class UsersController{
     @Get('facebook/redirect')
     @UseGuards(FacebookGuard)
     async facebookAuthRes(@Req() req) {
-        // return this.usersService.googleSignIn(req.user);
-        console.log(req);
+       return this.usersService.googleSignIn(req.user);
     }
 
     @Post()
